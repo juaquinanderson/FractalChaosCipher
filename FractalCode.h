@@ -14,71 +14,94 @@
 
 class FractalCode
 {
-    double Cx,Cy;
-    double Zx,Zy;
+	double Cx,Cy;
+	double Zx,Zy;
 
-    /*  gives sign of number */
-    inline double sign(double d)
-    {
-        if (d<0) return(-1.0);
-        else return(1.0);
-    };
+	/*  gives sign of number */
+	inline double sign(double d)
+	{
+	    if (d<0) return(-1.0);
+	    else return(1.0);
+	};
 
-    inline unsigned int projecty(double y)
+	inline unsigned int projecty(double y)
     // project y onto integer grid
     // this is just some scaling choice for testing,
     // dont know what is the best choice here
 
     {   unsigned long q;
-        const double scale=(32768.0/2.0);
-        const double offset=(32768.0);
-        //assert(((NewZy*scale)+offset)>0.0);
-        q=(y*scale)+offset;  //project to positive integer
-        q&=1;  // least significant bit
-        return q;
+    	const double scale=(32768.0/2.0);
+    	const double offset=(32768.0);
+    	//assert(((NewZy*scale)+offset)>0.0);
+    	q=(y*scale)+offset;  //project to positive integer
+    	q&=1;  // least significant bit
+    	return q;
     }
 
-    inline void findfirstroot()
-    {
-        /* Zn*Zn=Z(n+1)-c */
-        Zx=Zx-Cx;
-        Zy=Zy-Cy;
+	inline unsigned int projectx(double x)
+    // project y onto integer grid
+    // this is just some scaling choice for testing,
+    // dont know what is the best choice here
+    //  copysign
+	//  frexp
+	//  signbit
+	//  fabs
+	//  result = ldexp (param , n)
 
-        double NewZx, NewZy, r;
-        r=sqrt(Zx*Zx+Zy*Zy);
-        /* sqrt of complex number algorithm from Peitgen, Jurgens, Saupe: Fractals for the classroom */
-        if (Zx>0)
-        {
-            NewZx=sqrt(0.5*(Zx+r));
-            NewZy=Zy/(2*NewZx);
-        }
-        else /* ZX <= 0 */
-        {
-            if (Zx<0)
-            {
-                NewZy=sign(Zy)*sqrt(0.5*(-Zx+r));
-                NewZx=Zy/(2*NewZy);
-            }
-            else /* Zx=0 */
-            {
-                NewZx=sqrt(0.5*fabs(Zy));
-                if (NewZx>0) NewZy=Zy/(2*NewZx);
-                else NewZy=0;
-            }
-        };
-        /* end sqrt of complex number algorithm */
-        Zx=NewZx;
-        Zy=NewZy;
-    };
+    {
+		double y;
+        int n;
+        y = frexp (x , &n);
+        y= ldexp(y,51);
+        return (((y-floor(y))<0.5)?1:0);
+
+    }
+
+	inline void findfirstroot()
+	{
+	/* Zn*Zn=Z(n+1)-c */
+		Zx=Zx-Cx;
+		Zy=Zy-Cy;
+
+		double NewZx, NewZy, r;
+		r=sqrt(Zx*Zx+Zy*Zy);
+		/* sqrt of complex number algorithm from Peitgen, Jurgens, Saupe: Fractals for the classroom */
+		if (Zx>0)
+		{
+			NewZx=sqrt(0.5*(Zx+r));
+			NewZy=Zy/(2*NewZx);
+		}
+		else /* ZX <= 0 */
+		{
+			if (Zx<0)
+			{
+				NewZy=sign(Zy)*sqrt(0.5*(-Zx+r));
+				NewZx=Zy/(2*NewZy);
+			}
+			else /* Zx=0 */
+			{
+				NewZx=sqrt(0.5*fabs(Zy));
+				if (NewZx>0) NewZy=Zy/(2*NewZx);
+				else NewZy=0;
+			}
+		};
+		/* end sqrt of complex number algorithm */
+	    Zx=NewZx;Zy=NewZy;
+	};
 
 public:
-    unsigned int Acode(unsigned int clear);  //Acode is inverse of Bcode
-    unsigned int bitAcode(unsigned int clear);  //single bit version
-    unsigned int Bcode(unsigned int crypt);  //applying them both consecutively, one after the other gets the original message
-    unsigned int bitBcode(unsigned int crypt);  //single bit version
+	unsigned int Acode(unsigned int clear);  //Acode is inverse of Bcode
+	unsigned int bitAcode(unsigned int clear);  //single bit version
+	unsigned int Bcode(unsigned int crypt);  //applying them both consecutively, one after the other gets the original message
+	unsigned int bitBcode(unsigned int crypt);  //single bit version
 
-    FractalCode(double cx,double cy);
-    virtual ~FractalCode();
+	unsigned int Ccode(unsigned int stream);  //Ccode is inverse of Dcode
+	unsigned int bitCcode(unsigned int stream);  //single bit version
+	unsigned int Dcode(unsigned int stream);  //Ccode is inverse of Dcode
+    unsigned int bitDcode(unsigned int stream);  //single bit version
+
+	FractalCode(double cx,double cy);
+	virtual ~FractalCode();
 };
 
 /*  Example:
